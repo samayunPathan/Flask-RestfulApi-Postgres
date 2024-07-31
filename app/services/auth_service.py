@@ -6,40 +6,64 @@ from datetime import datetime
 from flask import jsonify
 import uuid
 
+
+
+
+
+
 # def register_user(data):
-#     """
-#     Register a new user.
-#     """
-#     username = data.get('username')
-#     first_name = data.get('first_name')
-#     last_name = data.get('last_name')
-#     email = data.get('email')
-#     password = data.get('password')
+#     if not data:
+#         return {"message": "No data provided"}, 400
+    
+#     try:
+#         # Extract data from the request
+#         username = data.get('username')
+#         first_name = data.get('first_name')
+#         last_name = data.get('last_name')
+#         email = data.get('email')
+#         password = data.get('password')
+#         role = UserRole[data.get('role', 'USER').upper()]  # Convert role to enum
 
-#     # Check if user already exists
-#     if User.query.filter_by(email=email).first():
-#         return jsonify({"message": "User already exists"}), 400
+#         # Check if user already exists
+#         existing_user = User.query.filter_by(email=email).first()
+#         if existing_user:
+#             return {"message": "User already exists"}, 400
 
-#     # Hash the password
-#     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+#         # Hash the password
+#         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-#     new_user = User(
-#         username=username,
-#         first_name=first_name,
-#         last_name=last_name,
-#         email=email,
-#         password=hashed_password
-#     )
+#         # Create a new user
+#         new_user = User(
+#             username=username,
+#             first_name=first_name,
+#             last_name=last_name,
+#             email=email,
+#             password=hashed_password,
+#             role=role
+#         )
+#         db.session.add(new_user)
+#         db.session.commit()
 
-#     db.session.add(new_user)
-#     db.session.commit()
+#         # Generate an access token (optional)
+#         access_token = create_access_token(identity={'email': email})
 
-#     return jsonify({"message": "User registered successfully"}), 201
+#         return {
+#             "message": "User registered successfully",
+#             "access_token": access_token
+#         }, 201
+
+#     except Exception as e:
+#         # Log the error
+#         print(f"Error during registration: {str(e)}")
+#         return {"message": "An error occurred during registration", "error": str(e)}, 500
+
 
 from app import db, bcrypt
-from app.models.user import User
+from app.models.user import User, UserRole
 from flask_jwt_extended import create_access_token
-from app.schemas.user_schema import user_schema
+# In auth_service.py or where register_user is defined
+from app.models.user import User, UserRole
+
 
 def register_user(data):
     if not data:
@@ -52,7 +76,11 @@ def register_user(data):
         last_name = data.get('last_name')
         email = data.get('email')
         password = data.get('password')
-        role = data.get('role', 'user')  # default to 'user'
+        role = data.get('role', 'user').upper()  # default to 'user'
+
+        # Validate the role
+        if role not in UserRole.__members__:
+            return {"message": "Invalid role"}, 400
 
         # Check if user already exists
         existing_user = User.query.filter_by(email=email).first()
@@ -69,7 +97,7 @@ def register_user(data):
             last_name=last_name,
             email=email,
             password=hashed_password,
-            role=role
+            role=UserRole[role]  # Convert the role to UserRole enum
         )
         db.session.add(new_user)
         db.session.commit()
