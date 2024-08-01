@@ -10,6 +10,9 @@ from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager
 from config import Config
+from flasgger import Swagger
+from flask_cors import CORS
+
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -25,6 +28,8 @@ def create_app():
     migrate.init_app(app, db)
     bcrypt.init_app(app)
     jwt.init_app(app)
+    Swagger(app)
+    CORS(app)
 
     from app.routes.auth_routes import auth_bp
     from app.routes.user_routes import user_bp

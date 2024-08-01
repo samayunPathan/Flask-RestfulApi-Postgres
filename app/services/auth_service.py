@@ -10,6 +10,8 @@ from app.schemas.user_schema import user_schema
 from datetime import datetime, timedelta
 from flask import jsonify
 import uuid
+from config import Config
+
 
 def register_user(data):
     if not data:
@@ -22,7 +24,12 @@ def register_user(data):
         last_name = data.get('last_name')
         email = data.get('email')
         password = data.get('password')
-        role = data.get('role', 'user').upper()  # default to 'user'
+        secret_admin_key = data.get('secret_admin_key')  # Retrieve secret_admin_key from request body
+        
+        if secret_admin_key == Config.SECRET_ADMIN_KEY:
+            role = 'ADMIN'
+        else:
+            role = 'USER'  # Default to 'USER'
 
         # Validate the role
         if role not in UserRole.__members__:
@@ -52,8 +59,13 @@ def register_user(data):
         # Generate an access token (optional)
         access_token = create_access_token(identity={'email': email})
 
+# Return success message with details
         return {
             "message": "User registered successfully",
+            "details": {
+                "username": username,
+                "role": role
+            },
             "access_token": access_token
         }, 201
 
@@ -61,6 +73,7 @@ def register_user(data):
         # Log the error
         print(f"Error during registration: {str(e)}")
         return {"message": "An error occurred during registration", "error": str(e)}, 500
+
 
 def login_user(data):
     """
