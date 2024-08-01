@@ -28,7 +28,12 @@ def create_app():
     migrate.init_app(app, db)
     bcrypt.init_app(app)
     jwt.init_app(app)
-    Swagger(app)
+
+    
+     # Swagger configuration
+    swagger = Swagger(app)
+
+   
     CORS(app)
 
     from app.routes.auth_routes import auth_bp
