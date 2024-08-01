@@ -1,74 +1,20 @@
+
+
+
+# ----- test ----- 
+
 from app import db, bcrypt
-from app.models.user import User
-from flask_jwt_extended import create_access_token
+from app.models.user import User, UserRole
+from flask_jwt_extended import create_access_token, get_jwt_identity
 from app.schemas.user_schema import user_schema
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import jsonify
 import uuid
-
-
-
-
-
-
-# def register_user(data):
-#     if not data:
-#         return {"message": "No data provided"}, 400
-    
-#     try:
-#         # Extract data from the request
-#         username = data.get('username')
-#         first_name = data.get('first_name')
-#         last_name = data.get('last_name')
-#         email = data.get('email')
-#         password = data.get('password')
-#         role = UserRole[data.get('role', 'USER').upper()]  # Convert role to enum
-
-#         # Check if user already exists
-#         existing_user = User.query.filter_by(email=email).first()
-#         if existing_user:
-#             return {"message": "User already exists"}, 400
-
-#         # Hash the password
-#         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-
-#         # Create a new user
-#         new_user = User(
-#             username=username,
-#             first_name=first_name,
-#             last_name=last_name,
-#             email=email,
-#             password=hashed_password,
-#             role=role
-#         )
-#         db.session.add(new_user)
-#         db.session.commit()
-
-#         # Generate an access token (optional)
-#         access_token = create_access_token(identity={'email': email})
-
-#         return {
-#             "message": "User registered successfully",
-#             "access_token": access_token
-#         }, 201
-
-#     except Exception as e:
-#         # Log the error
-#         print(f"Error during registration: {str(e)}")
-#         return {"message": "An error occurred during registration", "error": str(e)}, 500
-
-
-from app import db, bcrypt
-from app.models.user import User, UserRole
-from flask_jwt_extended import create_access_token
-# In auth_service.py or where register_user is defined
-from app.models.user import User, UserRole
-
 
 def register_user(data):
     if not data:
         return {"message": "No data provided"}, 400
-    
+
     try:
         # Extract data from the request
         username = data.get('username')
@@ -82,10 +28,11 @@ def register_user(data):
         if role not in UserRole.__members__:
             return {"message": "Invalid role"}, 400
 
-        # Check if user already exists
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            return {"message": "User already exists"}, 400
+        # Check if username or email already exists
+        if User.query.filter_by(username=username).first():
+            return {"message": "Username already exists"}, 400
+        if User.query.filter_by(email=email).first():
+            return {"message": "Email already exists"}, 400
 
         # Hash the password
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -115,7 +62,6 @@ def register_user(data):
         print(f"Error during registration: {str(e)}")
         return {"message": "An error occurred during registration", "error": str(e)}, 500
 
-
 def login_user(data):
     """
     Login a user.
@@ -142,14 +88,16 @@ def forgot_password(data):
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    # In a real application, send a reset token to the user's email
+    # Generate reset token
     reset_token = str(uuid.uuid4())
     user.reset_token = reset_token
     user.reset_token_expires_at = datetime.utcnow() + timedelta(hours=1)
     db.session.commit()
 
+    # In a real application, send the reset token to the user's email
     # Send email logic here
-    return jsonify({"message": "Password reset token sent to email"}), 200
+
+    return jsonify({"message": "Password reset token sent to email", "reset_token": reset_token}), 200
 
 def reset_password(data):
     """
@@ -170,3 +118,4 @@ def reset_password(data):
     db.session.commit()
 
     return jsonify({"message": "Password reset successfully"}), 200
+
