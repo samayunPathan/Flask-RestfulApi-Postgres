@@ -1,9 +1,5 @@
 
-
-
-
-# ------ test-z----- 
-
+# ------ test ----- 
 
 from app import db
 from app.models.user import User, UserRole
@@ -31,18 +27,7 @@ def get_user(user_id):
     else:
         return jsonify({"message": "Unauthorized"}), 403
 
-def update_user(user_id, data):
-    current_user = get_current_user()
-    if current_user.role == UserRole.ADMIN or current_user.id == user_id:
-        user = User.query.get_or_404(user_id)
-        user.username = data.get('username', user.username)
-        user.first_name = data.get('first_name', user.first_name)
-        user.last_name = data.get('last_name', user.last_name)
-        user.email = data.get('email', user.email)
-        db.session.commit()
-        return jsonify(user_schema.dump(user)), 200
-    else:
-        return jsonify({"message": "Unauthorized"}), 403
+
 
 def delete_user(user_id):
     current_user = get_current_user()
@@ -54,32 +39,35 @@ def delete_user(user_id):
     else:
         return jsonify({"message": "Unauthorized"}), 403
 
-def activate_user(user_id):
+
+def update_user(user_id, data):
     current_user = get_current_user()
-    if current_user.role == UserRole.ADMIN:
-        user = User.query.get_or_404(user_id)
-        user.active = True
-        db.session.commit()
-        return jsonify(user_schema.dump(user)), 200
-    else:
+    user = User.query.get_or_404(user_id)
+
+    if current_user.role != UserRole.ADMIN and current_user.id != user_id:
         return jsonify({"message": "Unauthorized"}), 403
 
-def deactivate_user(user_id):
-    current_user = get_current_user()
+    # Admin can update all fields
     if current_user.role == UserRole.ADMIN:
-        user = User.query.get_or_404(user_id)
-        user.active = False
-        db.session.commit()
-        return jsonify(user_schema.dump(user)), 200
-    else:
-        return jsonify({"message": "Unauthorized"}), 403
+        user.username = data.get('username', user.username)
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name = data.get('last_name', user.last_name)
+        user.email = data.get('email', user.email)
+        user.role = data.get('role', user.role)
+        user.active = data.get('active', user.active)
+    
+    # Regular user can update only their own non-role and non-active fields
+    elif current_user.id == user_id:
+        if 'role' in data or 'active' in data:
+            return jsonify({"message": "Unauthorized to change role or active status"}), 403
+        user.username = data.get('username', user.username)
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name = data.get('last_name', user.last_name)
+        user.email = data.get('email', user.email)
+    
+    db.session.commit()
+    return jsonify(user_schema.dump(user)), 200
 
-def promote_user(user_id):
-    current_user = get_current_user()
-    if current_user.role == UserRole.ADMIN:
-        user = User.query.get_or_404(user_id)
-        user.role = UserRole.ADMIN
-        db.session.commit()
-        return jsonify(user_schema.dump(user)), 200
-    else:
-        return jsonify({"message": "Unauthorized"}), 403
+
+
+

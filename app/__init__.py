@@ -1,8 +1,3 @@
-
-
-# ----- test ---- 
-
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -12,7 +7,6 @@ from flask_jwt_extended import JWTManager
 from config import Config
 from flasgger import Swagger
 from flask_cors import CORS
-
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -29,11 +23,46 @@ def create_app():
     bcrypt.init_app(app)
     jwt.init_app(app)
 
-    
-     # Swagger configuration
-    swagger = Swagger(app)
+    # Swagger configuration
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": 'apispec',
+                "route": '/apispec.json',
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/apidocs/"
+    }
 
-   
+    template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "Flask User Management API",
+            "description": "API for user management",
+            "version": "1.0.0"
+        },
+        "securityDefinitions": {
+            "Bearer": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
+            }
+        },
+        "security": [
+            {
+                "Bearer": []
+            }
+        ]
+    }
+
+    Swagger(app, config=swagger_config, template=template)
+
     CORS(app)
 
     from app.routes.auth_routes import auth_bp
@@ -43,3 +72,7 @@ def create_app():
     app.register_blueprint(user_bp)
 
     return app
+
+
+
+

@@ -107,8 +107,6 @@ def forgot_password(data):
     user.reset_token_expires_at = datetime.utcnow() + timedelta(hours=1)
     db.session.commit()
 
-    # In a real application, send the reset token to the user's email
-    # Send email logic here
 
     return jsonify({"message": "Password reset token sent to email", "reset_token": reset_token}), 200
 

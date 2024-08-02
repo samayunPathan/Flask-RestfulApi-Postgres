@@ -1,27 +1,3 @@
-
-# from flask import Blueprint, request, jsonify
-# from app.services import auth_service
-
-# auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
-
-# @auth_bp.route('/register', methods=['POST'])
-# def register():
-#     return auth_service.register_user(request.json)
-
-# @auth_bp.route('/login', methods=['GET','POST'])
-# def login():
-#     return auth_service.login_user(request.json)
-
-# @auth_bp.route('/forgot-password', methods=['POST'])
-# def forgot_password():
-#     return auth_service.forgot_password(request.json)
-
-# @auth_bp.route('/reset-password', methods=['POST'])
-# def reset_password():
-#     return auth_service.reset_password(request.json)
-
-
-
 from flask import Blueprint, request, jsonify
 from app.services import auth_service
 from flasgger import swag_from
@@ -30,6 +6,7 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/register', methods=['POST'])
 @swag_from({
+    'tags': ['Authentication'],
     'summary': 'Register a new user',
     'description': 'Register a new user with the provided details.',
     'parameters': [
@@ -95,6 +72,7 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 @swag_from({
+    'tags': ['Authentication'],
     'summary': 'Login user',
     'description': 'Login a user and return a JWT token.',
     'parameters': [
@@ -138,6 +116,7 @@ def login():
 
 @auth_bp.route('/forgot-password', methods=['POST'])
 @swag_from({
+    'tags': ['Authentication'],
     'summary': 'Forgot password',
     'description': 'Request a password reset link.',
     'parameters': [
@@ -181,6 +160,7 @@ def forgot_password():
 
 @auth_bp.route('/reset-password', methods=['POST'])
 @swag_from({
+    'tags': ['Authentication'],
     'summary': 'Reset password',
     'description': 'Reset user password using provided token and new password.',
     'parameters': [
