@@ -52,8 +52,6 @@ def register_user(data):
         db.session.add(new_user)
         db.session.commit()
 
-        # Generate an access token (optional)
-        access_token = create_access_token(identity={'email': email})
 
 # Return success message with details
         return {
@@ -61,8 +59,7 @@ def register_user(data):
             "details": {
                 "username": username,
                 "role": role
-            },
-            "access_token": access_token
+            }
         }, 201
 
     except Exception as e:
@@ -84,7 +81,9 @@ def login_user(data):
         return jsonify({"message": "Invalid email or password"}), 401
 
     access_token = create_access_token(identity=user.id)
-    return jsonify(access_token=access_token), 200
+    format_token=f"Bearer {access_token}"
+    return jsonify(format_token=format_token), 200
+   
 
 def forgot_password(data):
     """
