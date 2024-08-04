@@ -23,3 +23,6 @@ six==1.16.0
 SQLAlchemy==2.0.31
 typing_extensions==4.12.2
 Werkzeug==3.0.3
+flasgger==0.9.7.1
+Flask-Cors==4.0.1
+flask-mail==0.10.0
