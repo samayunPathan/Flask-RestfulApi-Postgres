@@ -148,5 +148,6 @@ All protected endpoints require a valid JWT token in the Authorization header:
 
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+
+![Screenshot (2)](https://github.com/user-attachments/assets/52542fcb-ccf9-4f18-9a71-f6069ee6723c)
 
