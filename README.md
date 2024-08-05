@@ -12,14 +12,15 @@ This project is a RESTful API built with Flask for user management. It provides 
 3. [Project Structure](#project-structure)
 4. [Technology Stack](#technology-stack)
 5. [Setup and Installation](#setup-and-installation)
-6. [API Documentation](#api-documentation)
+6. [Database Migration](#database-migration)
+7. [API Documentation](#api-documentation)
    - [Key Endpoints](#key-endpoints)
      - [Authentication Endpoints](#authentication-endpoints)
      - [User Management Endpoints](#user-management-endpoints)
-7. [User Model](#user-model)
-8. [Authentication](#authentication)
-9. [Role-Based Access Control](#role-based-access-control)
-10. [Screenshots](#screenshots)
+8. [User Model](#user-model)
+9. [Authentication](#authentication)
+10. [Role-Based Access Control](#role-based-access-control)
+11. [Screenshots](#screenshots)
 
 
 
@@ -96,6 +97,17 @@ SECRETE_ADMIN_KEY=your admin_secret_key`
 
 5. Run the application:
 `python run.py`
+
+## Database Migration
+To manage database migrations, use the following commands:
+
+Create a new migration:
+
+`flask db migrate -m "message"`
+
+Apply the migration:
+
+`flask db upgrade`
 
 ## API Documentation
 
