@@ -52,11 +52,7 @@ def register_user(data):
         db.session.add(new_user)
         db.session.commit()
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 9761ea6250fbb498607682041185ca47ca089a61
-# Return success message with details
+    # Return success message with details
         return {
             "message": "User registered successfully",
             "details": {
@@ -85,7 +81,6 @@ def login_user(data):
 
     access_token = create_access_token(identity=user.id)
     format_token=f"Bearer {access_token}"
-<<<<<<< HEAD
     return jsonify(access_token=format_token), 200
 
 
@@ -110,10 +105,6 @@ Submit a POST request to {reset_url} with the following JSON body:
 If you did not make this request then simply ignore this email and no changes will be made.
 '''
     mail.send(msg)
-=======
-    return jsonify(format_token=format_token), 200
-   
->>>>>>> 9761ea6250fbb498607682041185ca47ca089a61
 
 def forgot_password(data):
     """
