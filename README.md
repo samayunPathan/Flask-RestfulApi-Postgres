@@ -91,7 +91,8 @@ cd flask_user_management
 Create a .env file and add the following variables according to `config.py` file for example
 
 `DATABASE_URL=postgresql://username:password@localhost/dbname
-SECRET_KEY=your_secret_key_here`
+SECRET_KEY=your_secret_key_here
+SECRETE_ADMIN_KEY=your admin_secret_key`
 
 5. Run the application:
 `python run.py`
@@ -108,17 +109,114 @@ The API is documented using Swagger. Once the application is running, you can ac
 #### Authentication Endpoints
 
 - **POST** `/auth/register`: Register a new user
+
+  ````
+  {
+  "email": "your email",
+  "first_name": "your first name",
+  "last_name": "your last name",
+  "password": "your password",
+  "secret_admin_key": "your secrete admin key",
+  "username": "your username"
+  }
+  ````
+     Response:
+    ````
+   {
+  msg: user create successfully
+   }
+    ````
+
 - **POST** `/auth/login`: User login (returns JWT token)
+  ````
+   {
+  "email": "your email",
+  "password": "your password"
+  }
+  ````
+   Response:
+    ````
+   {
+  msg: your jwt_access_token
+   }
+    ````
+
 - **POST** `/auth/forgot-password`: Request password reset and  get a reset_token via email
+  ````
+  {
+  "email": "your email"
+  }
+   ````
+   Response:
+    ````
+   {
+  msg: password reset_token
+   }
+    ````
 - **POST** `/auth/reset-password`: Reset password with token
+  ````
+  {
+  "email": "your email",
+  "password reset_token":"password reset_token",
+  "new password":"your new password"
+  }
+   ````
+   Response:
+    ````
+   {
+  msg: password reset_token
+   }
+    ````
 
 #### User Management Endpoints
 
 - **GET** `/users`: Get all users (Admin only)
+
+  Response:
+  ````
+    {
+    "active": "your status",
+    "created_at": "created time",
+    "email": "your email",
+    "first_name": "your first_name",
+    "id": your id,
+    "last_name": "yourlast_name",
+    "reset_token": null,
+    "reset_token_expires_at": null,
+    "role": "your role",
+    "updated_at": "updated time",
+    "username": "your user_name"
+  }
+  ````
 - **GET** `/users/<user_id>`: Get user by ID
 - **PUT** `/users/<user_id>`: Update user 
         Activate/Deactivate,Promote user to Admin (Admin only)
+    ````
+  {
+  "role":"USER/ADMIN"  *Admin only
+  "active":"active/deactive" *Admin only
+  "email": "your email",
+  "first_name": "your first name",
+  "last_name": "your last name",
+  "secret_admin_key": "your secrete admin key",
+  "username": "your username"
+  }
+  ````
+
+   Response:
+    ````
+   {
+  msg: user updated successfully
+   }
+    ````
 - **DELETE** `/users/<user_id>`: Delete user (Admin only)
+
+   Response:
+    ````
+   {
+  msg: user deleted successfully
+   }
+    ````
 
 
 ## User Model
