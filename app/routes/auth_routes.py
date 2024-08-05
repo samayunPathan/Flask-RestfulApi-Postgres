@@ -1,11 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.services import auth_service
 from flasgger import swag_from
-from flask_mail import Message, Mail
-
-
-# Initialize Flask-Mail
-mail = Mail()
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -207,10 +202,4 @@ def forgot_password():
 })
 def reset_password():
     return auth_service.reset_password(request.json)
-
-
-
-
-# ==== try mail ====  
-
 

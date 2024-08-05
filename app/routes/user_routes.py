@@ -130,7 +130,7 @@ def get_user(user_id):
                     'first_name': {'type': 'string'},
                     'last_name': {'type': 'string'},
                     'email': {'type': 'string'},
-                    'role': {'type': 'string'},
+                    'secret_admin_key': {'type': 'string'},
                     'active': {'type': 'boolean'}
                 }
             }

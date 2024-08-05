@@ -1,6 +1,3 @@
-
-# ------ test ----- 
-
 from app import db
 from app.models.user import User, UserRole
 from app.schemas.user_schema import user_schema, users_schema

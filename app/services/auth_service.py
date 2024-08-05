@@ -1,12 +1,12 @@
-from app import db, bcrypt
-from app.models.user import User, UserRole
-from flask_jwt_extended import create_access_token, get_jwt_identity
-from app.schemas.user_schema import user_schema
-from datetime import datetime, timedelta
-from flask import jsonify
 import uuid
+from datetime import datetime, timedelta
+from flask import jsonify, current_app, url_for
+from flask_mail import Message
+from werkzeug.security import generate_password_hash
+from app import db, bcrypt
+from flask_jwt_extended import create_access_token, get_jwt_identity
+from app.models.user import User, UserRole
 from config import Config
-
 
 
 def register_user(data):
@@ -52,17 +52,13 @@ def register_user(data):
         db.session.add(new_user)
         db.session.commit()
 
-        # Generate an access token (optional)
-        access_token = create_access_token(identity={'email': email})
-
 # Return success message with details
         return {
             "message": "User registered successfully",
             "details": {
                 "username": username,
                 "role": role
-            },
-            "access_token": access_token
+            }
         }, 201
 
     except Exception as e:
@@ -84,138 +80,80 @@ def login_user(data):
         return jsonify({"message": "Invalid email or password"}), 401
 
     access_token = create_access_token(identity=user.id)
-    return jsonify(access_token=access_token), 200
+    format_token=f"Bearer {access_token}"
+    return jsonify(access_token=format_token), 200
+
+
+def send_reset_email(user, reset_token):
+    from app import mail  # Importing within the app context
+
+    reset_url = url_for('auth.reset_password', _external=True)
+    
+    msg = Message('Password Reset Request',
+                  sender=current_app.config['MAIL_DEFAULT_SENDER'],
+                  recipients=[user.email])
+    msg.body = f'''To reset your password, use the following token:
+{reset_token}
+
+Submit a POST request to {reset_url} with the following JSON body:
+{{
+    "email": "{user.email}",
+    "reset_token": "{reset_token}",
+    "new_password": "your_new_password"
+}}
+
+If you did not make this request then simply ignore this email and no changes will be made.
+'''
+    mail.send(msg)
 
 def forgot_password(data):
     """
     Handle forgot password.
     """
     email = data.get('email')
-
+    
     user = User.query.filter_by(email=email).first()
-
+    
     if not user:
         return jsonify({"message": "User not found"}), 404
-
+    
     # Generate reset token
     reset_token = str(uuid.uuid4())
     user.reset_token = reset_token
     user.reset_token_expires_at = datetime.utcnow() + timedelta(hours=1)
     db.session.commit()
+    
 
-
-    return jsonify({"message": "Password reset token sent to email", "reset_token": reset_token}), 200
+    # return jsonify(reset_token=reset_token) # ........  for testing purpose  u can comment it .....
+    # Send email
+    try:
+        send_reset_email(user, reset_token)
+        return jsonify({"message": "Password reset token sent to email"},reset_token=reset_token), 200
+    except Exception as e:
+        # Log the error here
+        print(f"Failed to send email: {str(e)}")
+        return jsonify({"message": "Failed to send reset email. Please try again later."}), 500
 
 def reset_password(data):
     """
     Reset a user's password.
     """
-    email=data.get('email')
+    email = data.get('email')
     reset_token = data.get('reset_token')
     new_password = data.get('new_password')
     
-    user = User.query.filter_by(email=email).first()
-    user = User.query.filter_by(reset_token=reset_token).first()
-
+    user = User.query.filter_by(email=email, reset_token=reset_token).first()
+    
     if not user or user.reset_token_expires_at < datetime.utcnow():
         return jsonify({"message": "Invalid or expired reset token"}), 400
-
-    hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    
+    hashed_password = generate_password_hash(new_password)
     user.password = hashed_password
     user.reset_token = None
     user.reset_token_expires_at = None
     db.session.commit()
-
+    
     return jsonify({"message": "Password reset successfully"}), 200
 
 
 
-
-# ===== for mail ===== 
-
-
-# import uuid
-# from datetime import datetime, timedelta
-# from flask import jsonify, current_app, url_for
-# from flask_mail import Message
-# from werkzeug.security import generate_password_hash
-# from app import db, bcrypt
-# from app.models.user import User, UserRole
-
-# # auth_service.py
-# import uuid
-# from datetime import datetime, timedelta
-# from flask import jsonify, current_app, url_for
-# from flask_mail import Message
-# from werkzeug.security import generate_password_hash
-# from app import db, bcrypt
-# from app.models.user import User, UserRole
-
-# def send_reset_email(user, reset_token):
-#     from app import mail  # Importing within the app context
-
-#     reset_url = url_for('auth.reset_password', _external=True)
-    
-#     msg = Message('Password Reset Request',
-#                   sender=current_app.config['MAIL_DEFAULT_SENDER'],
-#                   recipients=[user.email])
-#     msg.body = f'''To reset your password, use the following token:
-# {reset_token}
-
-# Submit a POST request to {reset_url} with the following JSON body:
-# {{
-#     "email": "{user.email}",
-#     "reset_token": "{reset_token}",
-#     "new_password": "your_new_password"
-# }}
-
-# If you did not make this request then simply ignore this email and no changes will be made.
-# '''
-#     mail.send(msg)
-
-# def forgot_password(data):
-#     """
-#     Handle forgot password.
-#     """
-#     email = data.get('email')
-    
-#     user = User.query.filter_by(email=email).first()
-    
-#     if not user:
-#         return jsonify({"message": "User not found"}), 404
-    
-#     # Generate reset token
-#     reset_token = str(uuid.uuid4())
-#     user.reset_token = reset_token
-#     user.reset_token_expires_at = datetime.utcnow() + timedelta(hours=1)
-#     db.session.commit()
-    
-#     # Send email
-#     try:
-#         send_reset_email(user, reset_token)
-#         return jsonify({"message": "Password reset token sent to email"}), 200
-#     except Exception as e:
-#         # Log the error here
-#         print(f"Failed to send email: {str(e)}")
-#         return jsonify({"message": "Failed to send reset email. Please try again later."}), 500
-
-# def reset_password(data):
-#     """
-#     Reset a user's password.
-#     """
-#     email = data.get('email')
-#     reset_token = data.get('reset_token')
-#     new_password = data.get('new_password')
-    
-#     user = User.query.filter_by(email=email, reset_token=reset_token).first()
-    
-#     if not user or user.reset_token_expires_at < datetime.utcnow():
-#         return jsonify({"message": "Invalid or expired reset token"}), 400
-    
-#     hashed_password = generate_password_hash(new_password)
-#     user.password = hashed_password
-#     user.reset_token = None
-#     user.reset_token_expires_at = None
-#     db.session.commit()
-    
-#     return jsonify({"message": "Password reset successfully"}), 200
