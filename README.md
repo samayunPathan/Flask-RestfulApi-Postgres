@@ -176,7 +176,7 @@ The API is documented using Swagger. Once the application is running, you can ac
    Response:
     ````
    {
-  msg: password reset_token
+  msg: password reset successfully
    }
     ````
 
