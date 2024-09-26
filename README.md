@@ -3,7 +3,7 @@
 
 ## Project Description
 
-This project is a RESTful API built with Flask for user management. It provides functionality for user registration, authentication, password management, and user administration. The API follows OpenAPI standards, uses JWT for authentication, and is documented using Swagger.
+This project is a Flask-based RESTful API designed for user management. It includes features for user registration, authentication, password management (including forgot and reset password functionality using tokens), and user administration. The API adheres to OpenAPI standards, utilizes JWT for secure authentication, and is fully documented with Swagger.
 
 ## Table of Contents
 
